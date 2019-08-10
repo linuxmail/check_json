@@ -3,7 +3,7 @@ check_json
 
 Nagios plugin to check JSON attributes via http(s).
 
-This Plugin is a fork of the existing JSON Plugin from https://github.com/bbuchalter/check_json with the enhancements of using the Nagios::Plugin Perl Module, allowing to use thresholds and performance data collection from various json attributes.
+This Plugin is a fork of the existing JSON Plugin from https://github.com/c-kr/check_json with the enhancements of using the Monitoring::Plugin Perl Module, allowing to use thresholds and performance data collection from various json attributes, and supporting X-Auth and Bearer Token authorization methods.
 
 Performance data is also enhanced to extract performance data compliant to Nagios and Graphite standards. One attribute is selected for thresholds check, multiple others can be added for extracting performance data. This plugin is aimed at simplifying Nagios, Icinga & Icinga2 polling of JSON status APIs.
 
@@ -22,9 +22,19 @@ Result:
 Check JSON status API OK - dead_shares: 2, live_shares: 12, clients_connected: 234 | dead_shares=2;5;10 live_shares=12 clients_connected=234
 ```
 
+Home Assistant Check API Status
+```
+./check_json.pl --url http://hass.lan:8123/api/ --attribute '{message}' --expect 'API running.' --bearer LONG_LIVED_ACCESS_TOKEN
+```
+
+Home Assistant Check Entity Status
+```
+./check_json.pl --url http://hass.lan:8123/api/states/sensor.living_room_temperature --attribute '{state}' --warning 75 --critical 85 --bearer LONG_LIVED_ACCESS_TOKEN
+```
+
 Requirements
 ============
 
 Perl JSON package
 
-* Debian / Ubuntu : libjson-perl libnagios-plugin-perl libwww-perl
+* Debian / Ubuntu : libjson-perl libmonitoring-plugin-perl libwww-perl

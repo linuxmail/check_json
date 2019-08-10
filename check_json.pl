@@ -5,10 +5,10 @@ use strict;
 use HTTP::Request::Common;
 use LWP::UserAgent;
 use JSON;
-use Nagios::Plugin;
+use Monitoring::Plugin;
 use Data::Dumper;
 
-my $np = Nagios::Plugin->new(
+my $np = Monitoring::Plugin->new(
     usage => "Usage: %s -u|--url <http://user:pass\@host:port/url> -a|--attributes <attributes> "
     . "[ -c|--critical <thresholds> ] [ -w|--warning <thresholds> ] "
     . "[ -e|--expect <value> ] "
@@ -20,13 +20,14 @@ my $np = Nagios::Plugin->new(
     . "[ -T|--contenttype <content-type> ] "
     . "[ --ignoressl ] "
     . "[ -x|--xauth <X-Auth-Token> ] "
+    . "[ -b|--bearer <Bearer-Token> ] "
     . "[ -h|--help ] ",
     version => '0.5',
     blurb   => 'Nagios plugin to check JSON attributes via http(s)',
     extra   => "\nExample: \n"
     . "check_json.pl --url http://192.168.5.10:9332/local_stats --attributes '{shares}->{dead}' "
     . "--warning :5 --critical :10 --perfvars '{shares}->{dead},{shares}->{live}' "
-    . "--outputvars '{status_message}' -x <api_token>",
+    . "--outputvars '{status_message}' -b <api_token>",
     url     => 'https://github.com/c-kr/check_json',
     plugin  => 'check_json',
     timeout => 15,
@@ -105,6 +106,11 @@ $np->add_arg(
     help => "-x|--xauth\n   Use X-Auth-Token in header",
 );
 
+$np->add_arg(
+    spec => 'bearer|b=s',
+    help => "-b|--bearer\n   Use Bearer Token authentication in header",
+);
+
 ## Parse @ARGV and process standard arguments (e.g. usage, help, version)
 $np->getopts;
 if ($np->opts->verbose) { (print Dumper ($np))};
@@ -120,6 +126,10 @@ $ua->timeout($np->opts->timeout);
 
 if ($np->opts->xauth) {
     $ua->default_header('Accept' => 'application/json', 'X-Auth-Token' => $np->opts->xauth );
+}
+
+if ($np->opts->bearer) {
+    $ua->default_header('Accept' => 'application/json', 'Authorization' => 'Bearer ' . $np->opts->bearer );
 }
 
 if ($np->opts->ignoressl) {
