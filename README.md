@@ -38,3 +38,72 @@ Requirements
 Perl JSON package
 
 * Debian / Ubuntu : libjson-perl libmonitoring-plugin-perl libwww-perl
+
+Icinga2 Integration
+===================
+
+Example CheckCommand Definition:
+```
+/*
+ * JSON Check Command
+ */
+object CheckCommand "check-json" {
+  import "plugin-check-command"
+
+  command = [ PluginDir + "/check_json.pl" ]
+
+  arguments = {
+    "-u" = {
+      required = true
+      value = "$json_url$"
+    }
+    
+    "-a" = {
+      required = true
+      value = "$json_attributes$"
+    }
+
+    "-d" = "$json_divisor$"
+    "-w" = "$json_warning$"
+    "-c" = "$json_critical$"
+    "-e" = "$json_expect$"
+
+    "-p" = "$json_perfvars$"
+    "-o" = "$json_outvars$"
+
+    "-m" = "$json_metadata$"
+
+    "--ignoressl" = {
+      set_if = "$json_ignoressl$"
+      description = "Ignore bad SSL certificates"
+    }
+
+    "-x" = {
+      value = "$json_xauth_token$"
+      description = "Add an X-Auth-Token header with the specified token"
+    }
+
+    "-b" = {
+      value = "$json_bearer_token$"
+      description = "Add an Authorization: Bearer header with the specified token"
+    }
+  }
+}
+```
+
+Example Service Check Definition:
+```
+/*
+ * Home Assistant API Check
+ */
+object Service "hass-api" {
+  host_name = "hass.lan"
+  check_command = "check-json"
+  
+  vars.json_url = "http://$address$:8123/api/"
+  vars.json_attributes = "{message}"
+  vars.json_expect = "API running."
+
+  vars.json_bearer_token = "LONG_LIVED_ACCESS_TOKEN"
+}
+```
