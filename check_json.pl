@@ -178,6 +178,10 @@ foreach my $attribute (sort keys %attributes){
     if (!defined $check_value) {
         $np->nagios_exit(UNKNOWN, "No value received");
     }
+    else
+    {
+      if ($np->opts->verbose) { (print Dumper ($check_value))};
+    }
 
     if ($attributes{$attribute}{'divisor'}) {
         $check_value = $check_value/$attributes{$attribute}{'divisor'};
@@ -237,7 +241,9 @@ if ($np->opts->perfvars) {
         # make label ascii compatible
         $label =~ s/[^a-zA-Z0-9_-]//g  ;
         my $perf_value;
-        $perf_value = $json_response->{$key};
+        my $perf_value_str = '$perf_value = $json_response->'.$key;
+        if ($np->opts->verbose) { print Dumper ("Perfval: " . $perf_value_str) };
+        eval $perf_value_str;
         if ($np->opts->verbose) { print Dumper ("JSON key: ".$label.", JSON val: " . $perf_value) };
         if ( defined($perf_value) ) {
             # add threshold if attribute option matches key
@@ -267,7 +273,9 @@ if ($np->opts->outputvars) {
         # make label ascii compatible
         $label =~ s/[^a-zA-Z0-9_-]//g;
         my $output_value;
-        $output_value = $json_response->{$key};
+        my $output_value_str = '$output_value = $json_response->'.$key;
+        if ($np->opts->verbose) { print Dumper ("Outputval: " . $output_value_str) };
+        eval $output_value_str;
         push(@statusmsg, "$label: $output_value");
     }
 }
